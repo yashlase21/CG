@@ -1,0 +1,200 @@
+#include <graphics.h> 
+#include <conio.h>   
+#include <iostream.h> 
+#include <stdlib.h>   
+#include <dos.h>      
+
+class point
+{
+    public:
+    int x, y;
+};
+
+class poly
+{
+    private:
+        point p[20];  
+        int inter[20]; 
+        int x, y;
+        int v;         
+        int xmin, ymin, xmax, ymax; // Bounds of the polygon
+    public:
+        int c;
+        void read();
+        void calcs();
+        void display();
+        void ints(float);
+        void sort(int);
+};
+
+void poly::read()
+{
+    int i; 
+    cout << "\n\tSCAN_FILL ALGORITHM";
+    cout << "\n Enter the number of vertices of the polygon: ";
+    cin >> v;
+    
+    if (v > 2)
+    {
+        for (i = 0; i < v; i++) 
+        {
+            cout << "\nEnter the coordinates of vertex " << i + 1 << ": ";
+            cout << "\n\tx" << (i + 1) << " = ";
+            cin >> p[i].x;
+            cout << "\n\ty" << (i + 1) << " = ";
+            cin >> p[i].y;
+        }
+       
+        p[i].x = p[0].x;
+        p[i].y = p[0].y;
+        xmin = xmax = p[0].x;
+        ymin = ymax = p[0].y;
+    }
+    else
+    {
+        cout << "\n Enter a valid number of vertices.";
+        exit(0);
+    }
+}
+
+void poly::calcs()
+{
+    for (int j = 0; j < v; j++) // Use 'j' for bounds calculation
+    {
+        if (xmin > p[j].x) xmin = p[j].x;
+        if (xmax < p[j].x) xmax = p[j].x;
+        if (ymin > p[j].y) ymin = p[j].y;
+        if (ymax < p[j].y) ymax = p[j].y;
+    }
+}
+
+void poly::display()
+{
+    int ch1;
+    float s;
+    
+    do
+    {
+        cout << "\n\nMENU:";
+        cout << "\n\n\t1. Scan Line Fill ";
+        cout << "\n\n\t2. Exit ";
+        cout << "\n\nEnter your choice: ";
+        cin >> ch1;
+        
+        switch (ch1)
+        {
+            case 1:
+                s = ymin + 0.01;
+                delay(100);
+                cleardevice();
+                
+                while (s <= ymax)
+                {
+                    ints(s);
+                    sort(s); 
+                    s++;
+                }
+                break;
+                
+            case 2:
+                exit(0);
+        }
+        
+        cout << "\nDo you want to continue (y/n)? ";
+        char ch;
+        cin >> ch;
+        
+        if (ch == 'n' || ch == 'N')
+        {
+            break;
+        }
+    } while (1); 
+}
+
+void poly::ints(float z)
+{
+    int x1, x2, y1, y2, temp;
+    c = 0; // Reset intersection count
+    
+    for (int k = 0; k < v; k++) // Use 'k' for intersections
+    {
+        x1 = p[k].x;
+        y1 = p[k].y;
+        x2 = p[k + 1].x;
+        y2 = p[k + 1].y;
+        
+        if (y2 < y1)
+        {
+           
+            temp = x1;
+            x1 = x2;
+            x2 = temp;
+            temp = y1;
+            y1 = y2;
+            y2 = temp;
+        }
+        
+        if (z <= y2 && z >= y1)
+        {
+            if (y1 == y2)
+                x = x1;
+            else
+                x = x1 + (z - y1) * (x2 - x1) / (y2 - y1);
+            
+            if (x >= xmin && x <= xmax)
+                inter[c++] = x;
+        }
+    }
+}
+
+void poly::sort(int z)
+{
+    int temp;
+    
+    for (int i = 0; i < c - 1; i++)
+    {
+        for (int j = 0; j < c - i - 1; j++)
+        {
+            if (inter[j] > inter[j + 1])
+            {
+                temp = inter[j];
+                inter[j] = inter[j + 1];
+                inter[j + 1] = temp;
+            }
+        }
+    }
+
+
+
+	delay(100);
+	line(inter[i], z, inter[i + 1], z);
+  }
+    
+
+
+
+int main()
+{
+    int cl;
+    int gd = DETECT, gm;
+    
+    initgraph(&gd, &gm, "C:\\Turboc3\\BGI"); 
+    cleardevice();
+    
+    poly x;
+    x.read();    
+    x.calcs();  
+    
+    cleardevice();
+    cout << "\nEnter the color you want (0-15): ";
+    cin >> cl;
+    
+    setcolor(cl);
+    x.display();  
+    
+    getch();     
+    closegraph();
+    
+    return 0;
+}
+

@@ -1,0 +1,78 @@
+#include <graphics.h> // Graphics library
+#include <conio.h>    // Console input/output for Turbo C++
+#include <iostream.h> // Standard I/O
+#include <stdio.h>    // Standard I/O functions
+
+void ddaAlg(int x1, int y1, int x2, int y2)
+{
+    int dx = x2 - x1;
+    int dy = y2 - y1;
+    int steps = ((dx) > (dy)) ? (dx) : (dy); // Calculate the number of steps
+    float xInc = dx / (float)steps; // Increment in x
+    float yInc = dy / (float)steps; // Increment in y
+    float x = x1;
+    float y = y1;
+
+    for (int i = 0; i <= steps; i++)
+    {
+	putpixel((x), (y), 14); // Use color 14 for lines
+	x += xInc;
+	y += yInc;
+    }
+}
+
+void display(int xc, int yc, int x, int y)
+{
+    putpixel(xc + x, yc + y, 3); // Use color 3 for the circle
+    putpixel(xc - x, yc + y, 3);
+    putpixel(xc + x, yc - y, 3);
+    putpixel(xc - x, yc - y, 3);
+    putpixel(xc + y, yc + x, 3);
+    putpixel(xc - y, yc + x, 3);
+    putpixel(xc + y, yc - x, 3);
+    putpixel(xc - y, yc - x, 3);
+}
+
+void CircleB(int x1, int y1, int r)
+{
+    int x = 0, y = r;
+    int d = 3 - 2 * r; // Decision variable for circle
+    display(x1, y1, x, y);
+
+    while (y >= x)
+    {
+        x++;
+        if (d > 0)
+        {
+            y--;
+            d = d + 4 * (x - y) + 10; // Update decision variable
+        }
+        else
+        {
+            d = d + 4 * x + 6; // Update decision variable
+        }
+        display(x1, y1, x, y);
+    }
+}
+
+int main()
+{
+    int gd = DETECT, gm;
+
+    initgraph(&gd, &gm, "c:\\turboc3\\bgi"); // Initialize graphics in Turbo C++
+
+    // Draw the circumscribed circle
+    CircleB(150, 180, 57);
+    // Draw the inscribed circle
+    CircleB(150, 180, 57 / 2);
+
+    // Draw the triangle
+    ddaAlg(102, 150, 198, 150); // Base
+    ddaAlg(102, 150, 150, 236); // Left side
+    ddaAlg(150, 236, 198, 150); // Right side
+
+    getch(); // Wait for a key press
+    closegraph(); // Close the graphics window
+
+    return 0;
+}

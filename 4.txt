@@ -1,0 +1,289 @@
+#include <graphics.h> // Graphics library
+#include <conio.h>    // Console I/O
+#include <stdlib.h>   // For exit()
+#include <math.h>     // For mathematical functions
+#include <iostream.h> // Standard I/O
+
+class POLYGON
+{
+private:
+    int p[10][10], Trans_result[10][10], Trans_matrix[10][10];
+    float Rotation_result[10][10], Rotation_matrix[10][10];
+    float Scaling_result[10][10], Scaling_matrix[10][10];
+    float Shearing_result[10][10], Shearing_matrix[10][10];
+    int Reflection_result[10][10], Reflection_matrix[10][10];
+
+public:
+    int accept_poly(int [][10]);
+    void draw_poly(int [][10], int);
+    void draw_polyfloat(float [][10], int);
+    void matmult(int [][10], int [][10], int, int, int, int [][10]);
+    void matmultfloat(float [][10], int [][10], int, int, int, float [][10]);
+    void shearing(int [][10], int);
+    void scaling(int [][10], int);
+    void rotation(int [][10], int);
+    void translation(int [][10], int);
+    void reflection(int [][10], int);
+};
+
+int POLYGON::accept_poly(int p[][10])
+{
+    int i, n;
+    cout << "\n\nEnter number of vertices : ";
+    cin >> n;
+    for (i = 0; i < n; i++)
+    {
+        cout << "\n\nEnter (x,y) Co-ordinate of point P" << i << " : ";
+        cin >> p[i][0] >> p[i][1];
+        p[i][2] = 1; // Homogeneous coordinate
+    }
+
+    // Display coordinates
+    for (i = 0; i < n; i++)
+    {
+        cout << "\n";
+        for (int j = 0; j < 3; j++)
+        {
+            cout << p[i][j] << "\t\t";
+        }
+    }
+
+    return n;
+}
+
+void POLYGON::draw_poly(int p[][10], int n)
+{
+    int i, gd = DETECT, gm;
+    initgraph(&gd, &gm, "C:\\Turboc3\\BGI"); // Initialize graphics
+    line(320, 0, 320, 480); // Draw Y-axis
+    line(0, 240, 640, 240); // Draw X-axis
+
+    for (i = 0; i < n; i++)
+    {
+        if (i < n - 1)
+        {
+            line(p[i][0] + 320, -p[i][1] + 240, p[i + 1][0] + 320, -p[i + 1][1] + 240);
+        }
+        else
+            line(p[i][0] + 320, -p[i][1] + 240, p[0][0] + 320, -p[0][1] + 240);
+    }
+}
+
+void POLYGON::draw_polyfloat(float p[][10], int n)
+{
+    int i, gd = DETECT, gm;
+    initgraph(&gd, &gm, "C:\\Turboc3\\BGI"); // Initialize graphics
+    line(320, 0, 320, 480); // Draw Y-axis
+    line(0, 240, 640, 240); // Draw X-axis
+
+    for (i = 0; i < n; i++)
+    {
+        if (i < n - 1)
+        {
+            line(p[i][0] + 320, -p[i][1] + 240, p[i + 1][0] + 320, -p[i + 1][1] + 240);
+        }
+        else
+            line(p[i][0] + 320, -p[i][1] + 240, p[0][0] + 320, -p[0][1] + 240);
+    }
+}
+
+void POLYGON::translation(int p[10][10], int n)
+{
+    int tx, ty, i, j, i1, j1, k1, r1, c1, c2;
+    r1 = n; c1 = c2 = 3;
+    cout << "\n\nEnter X-Translation tx : ";
+    cin >> tx;
+    cout << "\n\nEnter Y-Translation ty : ";
+    cin >> ty;
+
+    // Initialize translation matrix
+    for (i = 0; i < 3; i++)
+        for (j = 0; j < 3; j++)
+            Trans_matrix[i][j] = 0;
+
+    Trans_matrix[0][0] = Trans_matrix[1][1] = Trans_matrix[2][2] = 1;
+    Trans_matrix[2][0] = tx; // Set tx
+    Trans_matrix[2][1] = ty; // Set ty
+
+    // Initialize result matrix
+    for (i1 = 0; i1 < 10; i1++)
+        for (j1 = 0; j1 < 10; j1++)
+            Trans_result[i1][j1] = 0;
+
+    // Matrix multiplication
+    for (i1 = 0; i1 < r1; i1++)
+        for (j1 = 0; j1 < c2; j1++)
+            for (k1 = 0; k1 < c1; k1++)
+                Trans_result[i1][j1] += (p[i1][k1] * Trans_matrix[k1][j1]);
+
+    cout << "\n\nPolygon after Translation : ";
+    draw_poly(Trans_result, n);
+}
+
+void POLYGON::rotation(int p[][10], int n)
+{
+    float type, Ang, Sinang, Cosang;
+    int i, j, i1, j1, k1, r1, c1, c2;
+    r1 = n; c1 = c2 = 3;
+
+    cout << "\n\nEnter the angle of rotation in degrees : ";
+    cin >> Ang;
+    cout << "\n\n* * * * Rotation Types * * * *";
+    cout << "\n\n1.Clockwise Rotation \n\n2.Anti-Clockwise Rotation ";
+    cout << "\n\nEnter your choice(1-2): ";
+    cin >> type;
+
+    // Convert degrees to radians
+    Ang = (Ang * 3.14159) / 180;
+    Sinang = sin(Ang);
+    Cosang = cos(Ang);
+
+    // Initialize rotation matrix
+    for (i = 0; i < 3; i++)
+        for (j = 0; j < 3; j++)
+            Rotation_matrix[i][j] = 0;
+
+    Rotation_matrix[0][0] = Rotation_matrix[1][1] = Cosang;
+    Rotation_matrix[0][1] = Rotation_matrix[1][0] = Sinang;
+    Rotation_matrix[2][2] = 1;
+
+    if (type == 1)
+        Rotation_matrix[0][1] = -Sinang; // Clockwise
+    else
+        Rotation_matrix[1][0] = -Sinang; // Anti-clockwise
+
+    // Initialize result matrix
+    for (i1 = 0; i1 < 10; i1++)
+        for (j1 = 0; j1 < 10; j1++)
+            Rotation_result[i1][j1] = 0;
+
+    // Matrix multiplication
+    for (i1 = 0; i1 < r1; i1++)
+        for (j1 = 0; j1 < c2; j1++)
+            for (k1 = 0; k1 < c1; k1++)
+                Rotation_result[i1][j1] += (p[i1][k1] * Rotation_matrix[k1][j1]);
+
+    cout << "\n\nPolygon after Rotation : ";
+    draw_polyfloat(Rotation_result, n);
+}
+
+void POLYGON::scaling(int p[][10], int n)
+{
+    float Sx, Sy;
+    int i, j, i1, j1, k1, r1, c1, c2;
+    r1 = n; c1 = c2 = 3;
+
+    cout << "\n\nEnter X-Scaling Sx : ";
+    cin >> Sx;
+    cout << "\n\nEnter Y-Scaling Sy : ";
+    cin >> Sy;
+
+    // Initialize scaling matrix
+    for (i = 0; i < 3; i++)
+        for (j = 0; j < 3; j++)
+            Scaling_matrix[i][j] = 0;
+
+    Scaling_matrix[0][0] = Sx;
+    Scaling_matrix[1][1] = Sy;
+    Scaling_matrix[2][2] = 1;
+
+    // Initialize result matrix
+    for (i1 = 0; i1 < 10; i1++)
+        for (j1 = 0; j1 < 10; j1++)
+            Scaling_result[i1][j1] = 0;
+
+    // Matrix multiplication
+    for (i1 = 0; i1 < r1; i1++)
+        for (j1 = 0; j1 < c2; j1++)
+            for (k1 = 0; k1 < c1; k1++)
+                Scaling_result[i1][j1] += (p[i1][k1] * Scaling_matrix[k1][j1]);
+
+    cout << "\n\nPolygon after Scaling : ";
+    draw_polyfloat(Scaling_result, n);
+}
+
+void POLYGON::shearing(int p[][10], int n)
+{
+    float Shx, Shy;
+    int i, j, i1, j1, k1, r1, c1, c2;
+    r1 = n; c1 = c2 = 3;
+
+    cout << "\n\nEnter X-Shearing Shx : ";
+    cin >> Shx;
+    cout << "\n\nEnter Y-Shearing Shy : ";
+    cin >> Shy;
+
+    // Initialize shearing matrix
+    for (i = 0; i < 3; i++)
+        for (j = 0; j < 3; j++)
+            Shearing_matrix[i][j] = 0;
+
+    Shearing_matrix[0][0] = 1;
+    Shearing_matrix[0][1] = Shx;
+    Shearing_matrix[1][0] = Shy;
+    Shearing_matrix[1][1] = 1;
+    Shearing_matrix[2][2] = 1;
+
+    // Initialize result matrix
+    for (i1 = 0; i1 < 10; i1++)
+        for (j1 = 0; j1 < 10; j1++)
+            Shearing_result[i1][j1] = 0;
+
+    // Matrix multiplication
+    for (i1 = 0; i1 < r1; i1++)
+        for (j1 = 0; j1 < c2; j1++)
+            for (k1 = 0; k1 < c1; k1++)
+                Shearing_result[i1][j1] += (p[i1][k1] * Shearing_matrix[k1][j1]);
+
+    cout << "\n\nPolygon after Shearing : ";
+    draw_polyfloat(Shearing_result, n);
+}
+
+void POLYGON::reflection(int p[10][10], int n)
+{
+    int i, j, i1, j1, k1, r1, c1, c2;
+    r1 = n; c1 = c2 = 3;
+
+    // Initialize reflection matrix
+    for (i = 0; i < 3; i++)
+        for (j = 0; j < 3; j++)
+            Reflection_matrix[i][j] = 0;
+
+    // Reflection over X-axis
+    Reflection_matrix[0][0] = 1;
+    Reflection_matrix[1][1] = -1;
+    Reflection_matrix[2][2] = 1;
+
+    // Initialize result matrix
+    for (i1 = 0; i1 < 10; i1++)
+        for (j1 = 0; j1 < 10; j1++)
+            Reflection_result[i1][j1] = 0;
+
+    // Matrix multiplication
+    for (i1 = 0; i1 < r1; i1++)
+        for (j1 = 0; j1 < c2; j1++)
+            for (k1 = 0; k1 < c1; k1++)
+                Reflection_result[i1][j1] += (p[i1][k1] * Reflection_matrix[k1][j1]);
+
+    cout << "\n\nPolygon after Reflection : ";
+
+}
+
+int main()
+{
+    POLYGON poly;
+    int p[10][10], n;
+
+    n = poly.accept_poly(p);
+
+    poly.draw_poly(p, n);
+    poly.translation(p, n);
+    poly.rotation(p, n);
+    poly.scaling(p, n);
+    poly.shearing(p, n);
+    poly.reflection(p, n);
+
+    getch(); // Wait for a key press
+    closegraph(); // Close graphics
+    return 0;
+}
